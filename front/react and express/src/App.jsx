@@ -3,7 +3,9 @@ import axios from 'axios';
 
 function App() {
   const [characters, setCharacters] = useState([]);
-
+  const [editing, setEditing] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [form, setForm] = useState({ name: '', realName: '', universe: '' });
 
   useEffect(() => {
     fetchCharacters();
@@ -18,6 +20,39 @@ function App() {
     await axios.delete(`http://localhost:8080/characters/${id}`);
     fetchCharacters();
   };
+
+    const startEdit = (character) => {
+    setEditing(character.id);
+    setForm({
+      name: character.name,
+      realName: character.realName,
+      universe: character.universe,
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditing(null);
+    setForm({ name: '', realName: '', universe: '' });
+  };
+
+  const submitEdit = async () => {
+    await axios.put(`http://localhost:8080/characters/${editing}`, form);
+    cancelEdit();
+    fetchCharacters();
+  };
+
+  const submitAdd = async () => {
+    await axios.post('http://localhost:8080/characters', form);
+    setAdding(false);
+    setForm({ name: '', realName: '', universe: '' });
+    fetchCharacters();
+  };
+
+  const cancelAdd = () => {
+    setAdding(false);
+    setForm({ name: '', realName: '', universe: '' });
+  };
+
 
 
   return (
@@ -59,6 +94,51 @@ function App() {
           ))}
         </tbody>
       </table>
+      {editing && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-3">Edit Character: #{editing}</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium">Name</label>
+              <input
+                className="border border-gray-300 rounded p-2 w-100"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Real Name</label>
+              <input
+                className="border border-gray-300 rounded p-2 w-100"
+                value={form.realName}
+                onChange={(e) => setForm({ ...form, realName: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Universe</label>
+              <input
+                className="border border-gray-300 rounded p-2 w-100"
+                value={form.universe}
+                onChange={(e) => setForm({ ...form, universe: e.target.value })}
+              />
+            </div>
+            <div className="space-x-2">
+              <button
+                className="bg-blue-500 cursor-pointer text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={submitEdit}
+              >
+                Submit
+              </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                onClick={cancelEdit}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
