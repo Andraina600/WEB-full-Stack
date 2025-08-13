@@ -3,7 +3,7 @@
     {
       "id": 1,
       "name": "Spider-Man",
-      "realName": "Peter Parker",
+      "realName": "Peter Parcker",
       "universe": "Earth-616"
     },
     {
@@ -34,12 +34,6 @@
       "id": 6,
       "name": "Doctor Strange",
       "realName": "Stephen Strange",
-      "universe": "Earth-616"
-    },
-    {
-      "id": 7,
-      "name": "Scarlet Witch",
-      "realName": "Wanda Maximoff",
       "universe": "Earth-616"
     },
     {

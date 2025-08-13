@@ -21,13 +21,13 @@ function App() {
     fetchCharacters();
   };
 
-    const startEdit = (character) => {
-    setEditing(character.id);
-    setForm({
-      name: character.name,
-      realName: character.realName,
-      universe: character.universe,
-    });
+  const startEdit = (character) => {
+      setEditing(character.id);
+      setForm({
+        name: character.name,
+        realName: character.realName,
+        universe: character.universe,
+      });
   };
 
   const cancelEdit = () => {
@@ -57,12 +57,19 @@ function App() {
 
   return (
     <div className="p-5 max-w-4xl flex-col text-center mx-auto">
-      <h1 className="text-4xl font-bold mb-5">CRUD Character App</h1>
+      <h1 className="text-4xl font-bold mb-5">Marvel Charcater</h1>
+        <button
+          className="bg-blue-500 text-white cursor-pointer px-4 py-2 rounded hover:bg-blue-600 mb-5"
+          onClick={() => setAdding(true)}
+        >
+            Add New Character
+        </button>
+
       
       <table className="w-full border-collapse border border-black">
         <thead>
           <tr className="bg-black0">
-            <th className="border border-black p-3">#</th>
+            <th className="border border-black p-3">id</th>
             <th className="border border-black p-3">Name</th>
             <th className="border border-black p-3">Real Name</th>
             <th className="border border-black p-3">Universe</th>
@@ -132,6 +139,52 @@ function App() {
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
                 onClick={cancelEdit}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {adding && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-3">Add New Character</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium">Name</label>
+              <input
+                className="border border-gray-300 rounded p-2 w-100"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Real Name</label>
+              <input
+                className="border border-gray-300 rounded p-2 w-100"
+                value={form.realName}
+                onChange={(e) => setForm({ ...form, realName: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Universe</label>
+              <input
+                className="border border-gray-300 rounded p-2 w-100"
+                value={form.universe}
+                onChange={(e) => setForm({ ...form, universe: e.target.value })}
+              />
+            </div>
+            <div className="space-x-5">
+              <button
+                className="bg-blue-500 w-20 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={submitAdd}
+              >
+                Add
+              </button>
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                onClick={cancelAdd}
               >
                 Cancel
               </button>

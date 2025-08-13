@@ -45,6 +45,13 @@ app.delete('/characters/:id', (req, res) => {
   res.status(204).send();
 });
 
+app.post('/characters', (req, res) => {
+  const newChar = { id: Date.now(), ...req.body };
+  data.characters.push(newChar);
+  fs.writeFileSync('./characters.json', JSON.stringify(data, null, 2));
+  res.status(201).json(newChar);
+});
+
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
