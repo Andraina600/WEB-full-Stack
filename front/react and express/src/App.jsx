@@ -3,95 +3,131 @@ import axios from 'axios';
 
 function App() {
   const [characters, setCharacters] = useState([]);
-  const [editing, setEditing] = useState(null);
-  const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ name: '', realName: '', universe: '' });
+  const [editing, setEditing] = useState(null); // ID du personnage en cours d'édition, null sinon
+  const [adding, setAdding] = useState(false); // True si ajout en cours
+  const [form, setForm] = useState({ name: '', realName: '', universe: '' }); // Champs du formulaire
+  const [success, setSuccess] = useState(false); // Notification de succès
+  const [error, setError] = useState(''); // Message d'erreur
 
   useEffect(() => {
     fetchCharacters();
   }, []);
 
   const fetchCharacters = async () => {
-    const res = await axios.get('http://localhost:8080/characters');
-    setCharacters(res.data);
+    try {
+      const res = await axios.get('http://localhost:8080/characters');
+      setCharacters(res.data);
+    } catch (error) {
+      console.error('Error fetching characters:', error);
+    }
   };
 
   const deleteCharacter = async (id) => {
-    await axios.delete(`http://localhost:8080/characters/${id}`);
-    fetchCharacters();
+    try {
+      await axios.delete(`http://localhost:8080/characters/${id}`);
+      fetchCharacters();
+    } catch (error) {
+      console.error('Error deleting character:', error);
+    }
   };
 
   const startEdit = (character) => {
-      setEditing(character.id);
-      setForm({
-        name: character.name,
-        realName: character.realName,
-        universe: character.universe,
-      });
+    setEditing(character.id);
+    setAdding(false); // Assure que adding est désactivé
+    setForm({
+      name: character.name,
+      realName: character.realName,
+      universe: character.universe,
+    });
+    setError('');
   };
 
-  const cancelEdit = () => {
+  const cancelForm = () => {
     setEditing(null);
-    setForm({ name: '', realName: '', universe: '' });
-  };
-
-  const submitEdit = async () => {
-    await axios.put(`http://localhost:8080/characters/${editing}`, form);
-    cancelEdit();
-    fetchCharacters();
-  };
-
-  const submitAdd = async () => {
-    await axios.post('http://localhost:8080/characters', form);
     setAdding(false);
     setForm({ name: '', realName: '', universe: '' });
-    fetchCharacters();
+    setError('');
   };
 
-  const cancelAdd = () => {
-    setAdding(false);
-    setForm({ name: '', realName: '', universe: '' });
+  const submitForm = async () => {
+    if (!form.name || !form.realName || !form.universe) {
+      setError('All fields are required!');
+      return;
+    }
+    try {
+      if (adding) {
+        // Ajout d'un nouveau personnage
+        await axios.post('http://localhost:8080/characters', form);
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000); // Notification disparaît après 3s
+      } else if (editing) {
+        // Mise à jour d'un personnage existant
+        await axios.put(`http://localhost:8080/characters/${editing}`, form);
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
+      cancelForm();
+      fetchCharacters();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setError('Failed to save character. Please try again.');
+    }
   };
-
-
 
   return (
-    <div className="p-5 max-w-4xl flex-col text-center mx-auto">
-      <h1 className="text-4xl font-bold mb-5">Marvel Charcater</h1>
-        <button
-          className="bg-blue-500 text-white cursor-pointer px-4 py-2 rounded hover:bg-blue-600 mb-5"
-          onClick={() => setAdding(true)}
-        >
-            Add New Character
-        </button>
+    <div className="p-5 text-center max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-5">CRUD Character App</h1>
 
-      
-      <table className="w-full border-collapse border border-black">
+      {success && (
+        <div className="bg-green-100 text-green-800 p-3 rounded mb-4 animate-fade-in">
+          {adding ? 'Personnage ajouté avec succès !' : 'Personnage mis à jour avec succès !'}
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-100 text-red-800 p-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      <button
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mb-5"
+        onClick={() => {
+          setAdding(true);
+          setEditing(null);
+          setForm({ name: '', realName: '', universe: '' });
+          setError('');
+        }}
+      >
+        Add New Character
+      </button>
+
+      <table className="w-full border-collapse border border-gray-300 md:table block overflow-x-auto">
         <thead>
-          <tr className="bg-black0">
-            <th className="border border-black p-3">id</th>
-            <th className="border border-black p-3">Name</th>
-            <th className="border border-black p-3">Real Name</th>
-            <th className="border border-black p-3">Universe</th>
-            <th className="border border-black p-3">Actions</th>
+          <tr className="bg-gray-100">
+            <th className="border border-gray-300 p-3">#</th>
+            <th className="border border-gray-300 p-3">Name</th>
+            <th className="border border-gray-300 p-3">Real Name</th>
+            <th className="border border-gray-300 p-3">Universe</th>
+            <th className="border border-gray-300 p-3">Actions</th>
           </tr>
         </thead>
         <tbody>
           {characters.map((char, index) => (
-            <tr key={char.id}>
-              <td className="border border-black p-3">{index + 1}</td>
-              <td className="border border-black p-3">{char.name}</td>
-              <td className="border border-black p-3">{char.realName}</td>
-              <td className="border border-black p-3">{char.universe}</td>
-              <td className="border border-black p-3">
+            <tr key={char.id} className="hover:bg-gray-50">
+              <td className="border border-gray-300 p-3">{index + 1}</td>
+              <td className="border border-gray-300 p-3">{char.name}</td>
+              <td className="border border-gray-300 p-3">{char.realName}</td>
+              <td className="border border-gray-300 p-3">{char.universe}</td>
+              <td className="border border-gray-300 p-3">
                 <button
-                  className="bg-green-500 cursor-pointer text-white px-3 py-1 rounded hover:bg-green-600 mr-2"
+                  className="bg-green-500 text-white px-3 py-1 cursor-pointer rounded hover:bg-green-600 mr-2"
                   onClick={() => startEdit(char)}
                 >
                   Update
                 </button>
                 <button
-                  className="bg-red-500 cursor-pointer text-white px-3 py-1 rounded hover:bg-red-600"
+                  className="bg-red-500 text-white px-3 py-1 cursor-pointer rounded hover:bg-red-600"
                   onClick={() => deleteCharacter(char.id)}
                 >
                   Delete
@@ -101,90 +137,53 @@ function App() {
           ))}
         </tbody>
       </table>
-      {editing && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-3">Edit Character: #{editing}</h3>
+
+      {(adding || editing) && (
+        <div className="mt-8 bg-gray-50 p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-3 text-gray-800">
+            {adding ? 'Add New Character' : `Edit Character: #${editing}`}
+          </h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium">Name</label>
+              <label className="block text-sm font-medium text-gray-700">Name</label>
               <input
-                className="border border-gray-300 rounded p-2 w-100"
+                className={`border rounded p-2 w-100 ${
+                  form.name ? 'border-gray-300' : 'border-red-500 bg-red-50'
+                }`}
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium">Real Name</label>
+              <label className="block text-sm font-medium text-gray-700">Real Name</label>
               <input
-                className="border border-gray-300 rounded p-2 w-100"
+                className={`border rounded p-2 w-100 ${
+                  form.realName ? 'border-gray-300' : 'border-red-500 bg-red-50'
+                }`}
                 value={form.realName}
                 onChange={(e) => setForm({ ...form, realName: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium">Universe</label>
+              <label className="block text-sm font-medium text-gray-700">Universe</label>
               <input
-                className="border border-gray-300 rounded p-2 w-100"
+                className={`border rounded p-2 w-100 ${
+                  form.universe ? 'border-gray-300' : 'border-red-500 bg-red-50'
+                }`}
                 value={form.universe}
                 onChange={(e) => setForm({ ...form, universe: e.target.value })}
               />
             </div>
             <div className="space-x-2">
               <button
-                className="bg-blue-500 cursor-pointer text-white px-4 py-2 rounded hover:bg-blue-600"
-                onClick={submitEdit}
+                className="bg-blue-500 text-white px-6 py-2 rounded cursor-pointer hover:bg-blue-600"
+                onClick={submitForm}
               >
-                Submit
+                {adding ? 'Add' : 'Update'}
               </button>
               <button
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                onClick={cancelEdit}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {adding && (
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-3">Add New Character</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium">Name</label>
-              <input
-                className="border border-gray-300 rounded p-2 w-100"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Real Name</label>
-              <input
-                className="border border-gray-300 rounded p-2 w-100"
-                value={form.realName}
-                onChange={(e) => setForm({ ...form, realName: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Universe</label>
-              <input
-                className="border border-gray-300 rounded p-2 w-100"
-                value={form.universe}
-                onChange={(e) => setForm({ ...form, universe: e.target.value })}
-              />
-            </div>
-            <div className="space-x-5">
-              <button
-                className="bg-blue-500 w-20 text-white px-4 py-2 rounded hover:bg-blue-600"
-                onClick={submitAdd}
-              >
-                Add
-              </button>
-              <button
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                onClick={cancelAdd}
+                className="bg-gray-500 text-white px-4 py-2 rounded cursor-pointer hover:bg-gray-600"
+                onClick={cancelForm}
               >
                 Cancel
               </button>
