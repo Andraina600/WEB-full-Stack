@@ -3,11 +3,11 @@ import axios from 'axios';
 
 function App() {
   const [characters, setCharacters] = useState([]);
-  const [editing, setEditing] = useState(null); // ID du personnage en cours d'édition, null sinon
-  const [adding, setAdding] = useState(false); // True si ajout en cours
-  const [form, setForm] = useState({ name: '', realName: '', universe: '' }); // Champs du formulaire
-  const [success, setSuccess] = useState(false); // Notification de succès
-  const [error, setError] = useState(''); // Message d'erreur
+  const [editing, setEditing] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [form, setForm] = useState({ name: '', realName: '', universe: '' });
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchCharacters();
@@ -33,7 +33,7 @@ function App() {
 
   const startEdit = (character) => {
     setEditing(character.id);
-    setAdding(false); // Assure que adding est désactivé
+    setAdding(false);
     setForm({
       name: character.name,
       realName: character.realName,
@@ -56,12 +56,11 @@ function App() {
     }
     try {
       if (adding) {
-        // Ajout d'un nouveau personnage
         await axios.post('http://localhost:8080/characters', form);
         setSuccess(true);
-        setTimeout(() => setSuccess(false), 3000); // Notification disparaît après 3s
+        setTimeout(() => setSuccess(false), 3000);
       } else if (editing) {
-        // Mise à jour d'un personnage existant
+
         await axios.put(`http://localhost:8080/characters/${editing}`, form);
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
